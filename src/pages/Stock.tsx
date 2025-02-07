@@ -1,13 +1,43 @@
 
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
-import { AlertCircle, ArrowUpDown, Package } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, ArrowUpDown, Package, Plus, ClipboardList, Factory } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Stock = () => {
+  const { toast } = useToast();
+
+  const handleNewCount = () => {
+    toast({
+      title: "Stok Sayımı Başlatıldı",
+      description: "Yeni stok sayımı başlatıldı",
+    });
+  };
+
+  const handleNewProduction = () => {
+    toast({
+      title: "Üretim Kaydı",
+      description: "Yeni üretim kaydı oluşturuldu",
+    });
+  };
+
   return (
     <DashboardLayout>
       <div className="animate-fade-in">
-        <h1 className="text-3xl font-semibold mb-8">Stok Yönetimi</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-semibold">Stok Yönetimi</h1>
+          <div className="flex gap-4">
+            <Button onClick={handleNewCount} className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Yeni Sayım
+            </Button>
+            <Button onClick={handleNewProduction} variant="outline" className="flex items-center gap-2">
+              <Factory className="w-4 h-4" />
+              Üretim Ekle
+            </Button>
+          </div>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="glass-card p-6">
@@ -33,10 +63,72 @@ const Stock = () => {
           <Card className="glass-card p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-lg font-semibold">Stok Hareketleri</h3>
-                <p className="text-3xl font-bold mt-2">+2,450 kg</p>
+                <h3 className="text-lg font-semibold">Günlük Sayımlar</h3>
+                <p className="text-3xl font-bold mt-2">3 sayım</p>
               </div>
-              <ArrowUpDown className="w-8 h-8 text-gray-600" />
+              <ClipboardList className="w-8 h-8 text-gray-600" />
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <Card className="glass-card p-6">
+            <h2 className="text-xl font-semibold mb-6">Son Sayımlar</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-4">Tarih</th>
+                    <th className="text-left py-4">Sayım No</th>
+                    <th className="text-left py-4">Personel</th>
+                    <th className="text-left py-4">Durum</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="py-4">02.01.2024</td>
+                    <td>S24001</td>
+                    <td>Ahmet Yılmaz</td>
+                    <td><span className="text-green-600 bg-green-100 px-2 py-1 rounded">Tamamlandı</span></td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-4">01.01.2024</td>
+                    <td>S24002</td>
+                    <td>Mehmet Demir</td>
+                    <td><span className="text-blue-600 bg-blue-100 px-2 py-1 rounded">Devam Ediyor</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <Card className="glass-card p-6">
+            <h2 className="text-xl font-semibold mb-6">Son Üretimler</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-4">Tarih</th>
+                    <th className="text-left py-4">Ürün</th>
+                    <th className="text-left py-4">Miktar</th>
+                    <th className="text-left py-4">Lot No</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="py-4">02.01.2024</td>
+                    <td>03.05 Granül Yem</td>
+                    <td>1,500 kg</td>
+                    <td>L24001</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-4">01.01.2024</td>
+                    <td>2mm Alabalık Yemi</td>
+                    <td>2,000 kg</td>
+                    <td>L24002</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </Card>
         </div>
@@ -52,6 +144,7 @@ const Stock = () => {
                   <th className="text-left py-4">Stok Miktarı</th>
                   <th className="text-left py-4">Birim</th>
                   <th className="text-left py-4">Durum</th>
+                  <th className="text-left py-4">İşlemler</th>
                 </tr>
               </thead>
               <tbody>
@@ -61,6 +154,9 @@ const Stock = () => {
                   <td>250</td>
                   <td>kg</td>
                   <td><span className="text-yellow-600 bg-yellow-100 px-2 py-1 rounded">Kritik</span></td>
+                  <td>
+                    <Button variant="ghost" size="sm">Düzenle</Button>
+                  </td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-4">02.00</td>
@@ -68,6 +164,9 @@ const Stock = () => {
                   <td>100</td>
                   <td>kg</td>
                   <td><span className="text-red-600 bg-red-100 px-2 py-1 rounded">Acil</span></td>
+                  <td>
+                    <Button variant="ghost" size="sm">Düzenle</Button>
+                  </td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-4">08.00</td>
@@ -75,6 +174,9 @@ const Stock = () => {
                   <td>3500</td>
                   <td>kg</td>
                   <td><span className="text-green-600 bg-green-100 px-2 py-1 rounded">Normal</span></td>
+                  <td>
+                    <Button variant="ghost" size="sm">Düzenle</Button>
+                  </td>
                 </tr>
               </tbody>
             </table>
