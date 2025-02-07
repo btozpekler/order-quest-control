@@ -1,10 +1,22 @@
 
 import { useState } from "react";
-import { Menu, Bell, ChevronDown } from "lucide-react";
+import { Menu, Bell, ChevronDown, Boxes, Package, TrendingUp, ClipboardList, BarChart, Factory, Users, UserCog, Truck } from "lucide-react";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const [notifications] = useState(3); // Example notification count
+  const [notifications] = useState(3);
+
+  const menuItems = [
+    { icon: Boxes, label: "Stok Yönetimi", href: "/stock" },
+    { icon: Package, label: "Siparişler", href: "/orders" },
+    { icon: Factory, label: "Üretim", href: "/production" },
+    { icon: ClipboardList, label: "Üretim Planlama", href: "/production-planning" },
+    { icon: Truck, label: "Sevkiyat", href: "/shipping" },
+    { icon: BarChart, label: "Raporlar", href: "/reports" },
+    { icon: Users, label: "Müşteriler", href: "/customers" },
+    { icon: UserCog, label: "Kullanıcı Yönetimi", href: "/users" },
+  ];
 
   return (
     <SidebarProvider>
@@ -12,9 +24,23 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         <Sidebar>
           <SidebarContent>
             <div className="px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-800">Feed Production</h2>
+              <h2 className="text-lg font-semibold text-gray-800">Yem Üretim Takip</h2>
             </div>
-            {/* Navigation items will go here */}
+            <div className="px-3">
+              {menuItems.map((item) => (
+                <Button
+                  key={item.label}
+                  variant="ghost"
+                  className="w-full justify-start mb-1"
+                  asChild
+                >
+                  <a href={item.href} className="flex items-center gap-3">
+                    <item.icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </a>
+                </Button>
+              ))}
+            </div>
           </SidebarContent>
         </Sidebar>
         
