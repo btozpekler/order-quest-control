@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Menu, Bell, ChevronDown, Boxes, Package, TrendingUp, ClipboardList, BarChart, Factory, Users, UserCog, Truck } from "lucide-react";
+import { Menu, Bell, ChevronDown, Boxes, Package, TrendingUp, ClipboardList, BarChart, Factory, Users, UserCog, Truck, Settings as SettingsIcon } from "lucide-react";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
@@ -16,6 +16,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
     { icon: BarChart, label: "Raporlar", href: "/reports" },
     { icon: Users, label: "Müşteriler", href: "/customers" },
     { icon: UserCog, label: "Kullanıcı Yönetimi", href: "/users" },
+    { icon: SettingsIcon, label: "Ayarlar", href: "/settings" },
   ];
 
   return (
