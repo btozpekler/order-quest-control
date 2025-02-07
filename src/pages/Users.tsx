@@ -1,7 +1,7 @@
 
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
-import { UserCog, Shield, Users } from "lucide-react";
+import { UserCog, Shield, Users as UsersIcon } from "lucide-react";
 
 const Users = () => {
   return (
@@ -16,7 +16,7 @@ const Users = () => {
                 <h3 className="text-lg font-semibold">Toplam Kullanıcı</h3>
                 <p className="text-3xl font-bold mt-2">24</p>
               </div>
-              <Users className="w-8 h-8 text-gray-600" />
+              <UsersIcon className="w-8 h-8 text-gray-600" />
             </div>
           </Card>
           
