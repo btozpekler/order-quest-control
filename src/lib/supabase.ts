@@ -1,12 +1,11 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Use your Supabase project URL and anon key
-const supabaseUrl = 'https://your-project-url.supabase.co';
-const supabaseKey = 'your-anon-key';
+const supabaseUrl = "https://ryycjmitvqpvgnnszeyj.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5eWNqbWl0dnFwdmdubnN6ZXlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkxMjEyNDMsImV4cCI6MjA1NDY5NzI0M30.SKCy08pugOG1sADgFET8Xwhzn5aB2YePwu87Yco3hkY";
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Supabase URL and key are required. Please check your configuration.');
+  console.error('Supabase URL ve anahtar gerekli. Lütfen yapılandırmanızı kontrol edin.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
