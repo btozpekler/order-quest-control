@@ -9,7 +9,143 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          customer_name: string
+          facility: string
+          id: string
+          notes: string | null
+          order_number: string
+          packaging: string
+          product: string
+          quantity: number
+          shipping_region: string
+          status: string | null
+          total_weight: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          customer_name: string
+          facility: string
+          id?: string
+          notes?: string | null
+          order_number: string
+          packaging: string
+          product: string
+          quantity: number
+          shipping_region: string
+          status?: string | null
+          total_weight: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          customer_name?: string
+          facility?: string
+          id?: string
+          notes?: string | null
+          order_number?: string
+          packaging?: string
+          product?: string
+          quantity?: number
+          shipping_region?: string
+          status?: string | null
+          total_weight?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      production: {
+        Row: {
+          batch_number: string
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          notes: string | null
+          product_type: string
+          quantity: number
+          status: string | null
+        }
+        Insert: {
+          batch_number: string
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          product_type: string
+          quantity: number
+          status?: string | null
+        }
+        Update: {
+          batch_number?: string
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          product_type?: string
+          quantity?: number
+          status?: string | null
+        }
+        Relationships: []
+      }
+      shipments: {
+        Row: {
+          completed_date: string | null
+          created_at: string | null
+          driver_name: string | null
+          driver_phone: string | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          planned_date: string
+          status: string | null
+          updated_at: string | null
+          vehicle_plate: string | null
+        }
+        Insert: {
+          completed_date?: string | null
+          created_at?: string | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          planned_date: string
+          status?: string | null
+          updated_at?: string | null
+          vehicle_plate?: string | null
+        }
+        Update: {
+          completed_date?: string | null
+          created_at?: string | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          planned_date?: string
+          status?: string | null
+          updated_at?: string | null
+          vehicle_plate?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
