@@ -2,7 +2,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Truck, AlertCircle, Share2, WhatsappIcon } from "lucide-react";
+import { Package, Truck, AlertCircle, Share2, MessageSquare } from "lucide-react";
 import { NewOrder } from "@/components/NewOrder";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
@@ -137,7 +137,7 @@ const Orders = () => {
                           size="sm"
                           onClick={() => handleWhatsAppShare(order)}
                         >
-                          <WhatsappIcon className="w-4 h-4" />
+                          <MessageSquare className="w-4 h-4" />
                         </Button>
                       </div>
                     </td>
