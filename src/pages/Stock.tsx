@@ -1,7 +1,8 @@
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Plus, ClipboardList, Factory } from "lucide-react";
+import { Package, Plus, ClipboardList, Factory, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { StockCount } from "@/components/StockCount";
 import { ProductionEntry } from "@/components/ProductionEntry";
