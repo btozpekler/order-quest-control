@@ -1,26 +1,13 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ArrowUpDown, Package, Plus, ClipboardList, Factory } from "lucide-react";
+import { Package, Plus, ClipboardList, Factory } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { StockCount } from "@/components/StockCount";
+import { ProductionEntry } from "@/components/ProductionEntry";
 
 const Stock = () => {
   const { toast } = useToast();
-
-  const handleNewCount = () => {
-    toast({
-      title: "Stok Sayımı Başlatıldı",
-      description: "Yeni stok sayımı başlatıldı",
-    });
-  };
-
-  const handleNewProduction = () => {
-    toast({
-      title: "Üretim Kaydı",
-      description: "Yeni üretim kaydı oluşturuldu",
-    });
-  };
 
   return (
     <DashboardLayout>
@@ -28,14 +15,8 @@ const Stock = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold">Stok Yönetimi</h1>
           <div className="flex gap-4">
-            <Button onClick={handleNewCount} className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Yeni Sayım
-            </Button>
-            <Button onClick={handleNewProduction} variant="outline" className="flex items-center gap-2">
-              <Factory className="w-4 h-4" />
-              Üretim Ekle
-            </Button>
+            <StockCount />
+            <ProductionEntry />
           </div>
         </div>
         
