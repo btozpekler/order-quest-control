@@ -2,43 +2,79 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Truck, AlertCircle, Share2, MessageSquare } from "lucide-react";
+import { Package, Truck, AlertCircle, Share2, MessageSquare, Edit, Trash } from "lucide-react";
 import { NewOrder } from "@/components/NewOrder";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Order {
   id: string;
-  customerName: string;
-  shippingRegion: string;
+  order_number: string;
+  customer_name: string;
+  shipping_region: string;
   product: string;
   packaging: string;
   quantity: number;
-  totalWeight: number;
+  total_weight: number;
   facility: "kara" | "baraj";
   notes: string;
-  createdBy: string;
+  created_by: string;
   status: string;
-  createdAt: string;
+  created_at: string;
 }
 
 const Orders = () => {
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: "SP2024001",
-      customerName: "A Firması",
-      shippingRegion: "Mudurnu / Bolu",
-      product: "03.05 Granül Yem",
-      packaging: "kova",
-      quantity: 20,
-      totalWeight: 200,
-      facility: "kara",
-      notes: "Acil teslimat",
-      createdBy: "Ahmet Yılmaz",
-      status: "Hazır",
-      createdAt: "2024-03-15"
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  useEffect(() => {
+    fetchOrders();
+    const subscription = supabase
+      .channel('orders_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+        console.log('Change received!', payload);
+        fetchOrders();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchOrders = async () => {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Hata",
+        description: "Siparişler yüklenirken bir hata oluştu.",
+        variant: "destructive"
+      });
+    } else {
+      setOrders(data || []);
     }
-  ]);
+  };
+
+  const handleEdit = (order: Order) => {
+    setEditingOrder(order);
+    setIsEditDialogOpen(true);
+  };
 
   const handleShare = (orderId: string) => {
     toast({
@@ -48,9 +84,67 @@ const Orders = () => {
   };
 
   const handleWhatsAppShare = (order: Order) => {
-    const message = `Sipariş Detayları:\nSipariş No: ${order.id}\nMüşteri: ${order.customerName}\nÜrün: ${order.product}\nMiktar: ${order.quantity} ${order.packaging}\nToplam: ${order.totalWeight} kg\nTesis: ${order.facility === 'kara' ? 'Kara Tesisi' : 'Baraj Tesisi'}\nNotlar: ${order.notes}`;
+    const message = `Sipariş Detayları:\nSipariş No: ${order.order_number}\nMüşteri: ${order.customer_name}\nÜrün: ${order.product}\nMiktar: ${order.quantity} ${order.packaging}\nToplam: ${order.total_weight} kg\nTesis: ${order.facility === 'kara' ? 'Kara Tesisi' : 'Baraj Tesisi'}\nNotlar: ${order.notes}`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
+  };
+
+  const handleUpdateOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingOrder) return;
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const updatedOrder = {
+      ...editingOrder,
+      customer_name: formData.get("customer"),
+      shipping_region: formData.get("region"),
+      product: formData.get("product"),
+      packaging: formData.get("packaging"),
+      quantity: Number(formData.get("quantity")),
+      facility: formData.get("facility"),
+      notes: formData.get("notes"),
+    };
+
+    const { error } = await supabase
+      .from('orders')
+      .update(updatedOrder)
+      .eq('id', editingOrder.id);
+
+    if (error) {
+      toast({
+        title: "Hata",
+        description: "Sipariş güncellenirken bir hata oluştu.",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Başarılı",
+        description: "Sipariş başarıyla güncellendi."
+      });
+      setIsEditDialogOpen(false);
+      fetchOrders();
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', orderId);
+
+    if (error) {
+      toast({
+        title: "Hata",
+        description: "Sipariş silinirken bir hata oluştu.",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Başarılı",
+        description: "Sipariş başarıyla silindi."
+      });
+      fetchOrders();
+    }
   };
 
   return (
@@ -58,7 +152,7 @@ const Orders = () => {
       <div className="animate-fade-in">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold">Siparişler</h1>
-          <NewOrder onOrderCreate={(newOrder) => setOrders([...orders, newOrder])} />
+          <NewOrder onOrderCreate={fetchOrders} />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -66,7 +160,7 @@ const Orders = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">Aktif Siparişler</h3>
-                <p className="text-3xl font-bold mt-2">48</p>
+                <p className="text-3xl font-bold mt-2">{orders.length}</p>
               </div>
               <Package className="w-8 h-8 text-gray-600" />
             </div>
@@ -76,7 +170,9 @@ const Orders = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">Sevkiyat Bekleyen</h3>
-                <p className="text-3xl font-bold mt-2">15</p>
+                <p className="text-3xl font-bold mt-2">
+                  {orders.filter(o => o.status === "Hazır").length}
+                </p>
               </div>
               <Truck className="w-8 h-8 text-gray-600" />
             </div>
@@ -86,7 +182,9 @@ const Orders = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">Kritik Siparişler</h3>
-                <p className="text-3xl font-bold mt-2 text-yellow-600">8</p>
+                <p className="text-3xl font-bold mt-2 text-yellow-600">
+                  {orders.filter(o => o.status === "Kritik").length}
+                </p>
               </div>
               <AlertCircle className="w-8 h-8 text-yellow-600" />
             </div>
@@ -112,19 +210,30 @@ const Orders = () => {
               <tbody>
                 {orders.map((order) => (
                   <tr key={order.id} className="border-b">
-                    <td className="py-4">{order.id}</td>
-                    <td>{order.customerName}</td>
+                    <td className="py-4">{order.order_number}</td>
+                    <td>{order.customer_name}</td>
                     <td>{order.product}</td>
-                    <td>{order.quantity} {order.packaging} ({order.totalWeight} kg)</td>
+                    <td>{order.quantity} {order.packaging} ({order.total_weight} kg)</td>
                     <td>{order.facility === 'kara' ? 'Kara Tesisi' : 'Baraj Tesisi'}</td>
-                    <td>{order.shippingRegion}</td>
+                    <td>{order.shipping_region}</td>
                     <td>
-                      <span className="text-green-600 bg-green-100 px-2 py-1 rounded">
+                      <span className={`px-2 py-1 rounded ${
+                        order.status === 'Hazır' ? 'bg-green-100 text-green-600' :
+                        order.status === 'Kritik' ? 'bg-yellow-100 text-yellow-600' :
+                        'bg-blue-100 text-blue-600'
+                      }`}>
                         {order.status}
                       </span>
                     </td>
                     <td>
                       <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEdit(order)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
                         <Button 
                           variant="ghost" 
                           size="sm"
@@ -139,6 +248,13 @@ const Orders = () => {
                         >
                           <MessageSquare className="w-4 h-4" />
                         </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteOrder(order.id)}
+                        >
+                          <Trash className="w-4 h-4 text-red-600" />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -148,6 +264,105 @@ const Orders = () => {
           </div>
         </Card>
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Sipariş Düzenle</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateOrder} className="space-y-4">
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="customer">Müşteri</Label>
+                <Input 
+                  id="customer" 
+                  name="customer" 
+                  defaultValue={editingOrder?.customer_name}
+                  required
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="region">Sevk Bölgesi</Label>
+                <Input 
+                  id="region" 
+                  name="region" 
+                  defaultValue={editingOrder?.shipping_region}
+                  required
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="product">Ürün</Label>
+                <Input 
+                  id="product" 
+                  name="product" 
+                  defaultValue={editingOrder?.product}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="packaging">Ambalaj</Label>
+                  <Select name="packaging" defaultValue={editingOrder?.packaging}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Ambalaj seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sb">SB (1000 kg)</SelectItem>
+                      <SelectItem value="bb">BB (750 kg)</SelectItem>
+                      <SelectItem value="kova">Kova (10 kg)</SelectItem>
+                      <SelectItem value="cuval">Çuval (25 kg)</SelectItem>
+                      <SelectItem value="kg">KG</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="quantity">Miktar</Label>
+                  <Input 
+                    id="quantity" 
+                    name="quantity" 
+                    type="number" 
+                    defaultValue={editingOrder?.quantity}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="facility">Tesis</Label>
+                <Select name="facility" defaultValue={editingOrder?.facility}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tesis seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kara">Kara Tesisi</SelectItem>
+                    <SelectItem value="baraj">Baraj Tesisi</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="notes">Notlar</Label>
+                <Input 
+                  id="notes" 
+                  name="notes" 
+                  defaultValue={editingOrder?.notes || ""}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-4">
+              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                İptal
+              </Button>
+              <Button type="submit">Güncelle</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
