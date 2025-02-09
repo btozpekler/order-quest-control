@@ -5,18 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Package, Truck, AlertCircle, Share2, MessageSquare, Edit, Trash } from "lucide-react";
 import { NewOrder } from "@/components/NewOrder";
 import { useState, useEffect } from "react";
-import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Order {
   id: string;
@@ -35,41 +35,39 @@ interface Order {
 }
 
 const Orders = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const queryClient = useQueryClient();
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ['orders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast.error("Siparişler yüklenirken bir hata oluştu");
+        throw error;
+      }
+
+      return data || [];
+    },
+  });
+
   useEffect(() => {
-    fetchOrders();
-    const subscription = supabase
+    const channel = supabase
       .channel('orders_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-        console.log('Change received!', payload);
-        fetchOrders();
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['orders'] });
       })
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
-  }, []);
-
-  const fetchOrders = async () => {
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      toast({
-        title: "Hata",
-        description: "Siparişler yüklenirken bir hata oluştu.",
-        variant: "destructive"
-      });
-    } else {
-      setOrders(data || []);
-    }
-  };
+  }, [queryClient]);
 
   const handleEdit = (order: Order) => {
     setEditingOrder(order);
@@ -77,10 +75,7 @@ const Orders = () => {
   };
 
   const handleShare = (orderId: string) => {
-    toast({
-      title: "Sipariş paylaşıldı",
-      description: `${orderId} numaralı sipariş paylaşıldı.`
-    });
+    toast.success(`${orderId} numaralı sipariş paylaşıldı.`);
   };
 
   const handleWhatsAppShare = (order: Order) => {
@@ -105,54 +100,62 @@ const Orders = () => {
       notes: formData.get("notes"),
     };
 
-    const { error } = await supabase
-      .from('orders')
-      .update(updatedOrder)
-      .eq('id', editingOrder.id);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update(updatedOrder)
+        .eq('id', editingOrder.id);
 
-    if (error) {
-      toast({
-        title: "Hata",
-        description: "Sipariş güncellenirken bir hata oluştu.",
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Başarılı",
-        description: "Sipariş başarıyla güncellendi."
-      });
+      if (error) throw error;
+
+      toast.success("Sipariş başarıyla güncellendi");
       setIsEditDialogOpen(false);
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast.error("Sipariş güncellenirken bir hata oluştu");
     }
   };
 
   const handleDeleteOrder = async (orderId: string) => {
-    const { error } = await supabase
-      .from('orders')
-      .delete()
-      .eq('id', orderId);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
 
-    if (error) {
-      toast({
-        title: "Hata",
-        description: "Sipariş silinirken bir hata oluştu.",
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Başarılı",
-        description: "Sipariş başarıyla silindi."
-      });
-      fetchOrders();
+      if (error) throw error;
+
+      toast.success("Sipariş başarıyla silindi");
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      toast.error("Sipariş silinirken bir hata oluştu");
     }
   };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+          <div className="h-96 bg-gray-200 rounded"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
       <div className="animate-fade-in">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold">Siparişler</h1>
-          <NewOrder onOrderCreate={fetchOrders} />
+          <NewOrder onOrderCreate={() => queryClient.invalidateQueries({ queryKey: ['orders'] })} />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

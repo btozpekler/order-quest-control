@@ -18,9 +18,11 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NewOrderProps {
-  onOrderCreate: (order: any) => void;
+  onOrderCreate?: (order: any) => void;
 }
 
 export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
@@ -39,28 +41,40 @@ export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
     return (weights[packaging as keyof typeof weights] || 0) * quantity;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const totalWeight = calculateTotalWeight(packaging, quantity);
 
+    const orderNumber = `SP${Date.now()}`;
     const newOrder = {
-      id: `SP${Date.now()}`,
-      customerName: formData.get("customer"),
-      shippingRegion: formData.get("region"),
+      order_number: orderNumber,
+      customer_name: formData.get("customer"),
+      shipping_region: formData.get("region"),
       product: formData.get("product"),
       packaging: packaging,
       quantity: quantity,
-      totalWeight: totalWeight,
+      total_weight: totalWeight,
       facility: formData.get("facility"),
       notes: formData.get("notes"),
-      createdBy: "Aktif Kullanıcı", // This would come from auth context in a real app
-      status: "Yeni",
-      createdAt: new Date().toISOString()
+      created_by: "Aktif Kullanıcı", // This would come from auth context in a real app
+      status: "Beklemede"
     };
 
-    onOrderCreate(newOrder);
-    setIsOpen(false);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .insert(newOrder);
+
+      if (error) throw error;
+
+      toast.success("Sipariş başarıyla oluşturuldu");
+      onOrderCreate?.(newOrder);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast.error("Sipariş oluşturulurken bir hata oluştu");
+    }
   };
 
   return (
@@ -80,7 +94,8 @@ export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
                 id="customer" 
                 name="customer" 
                 list="customers" 
-                placeholder="Müşteri adı girin veya seçin" 
+                placeholder="Müşteri adı girin veya seçin"
+                required 
               />
               <datalist id="customers">
                 <option value="A Firması" />
@@ -95,7 +110,8 @@ export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
                 id="region" 
                 name="region" 
                 list="regions" 
-                placeholder="Sevk bölgesi girin veya seçin" 
+                placeholder="Sevk bölgesi girin veya seçin"
+                required 
               />
               <datalist id="regions">
                 <option value="Mudurnu / Bolu" />
@@ -110,7 +126,8 @@ export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
                 id="product" 
                 name="product" 
                 list="products" 
-                placeholder="Ürün girin veya seçin" 
+                placeholder="Ürün girin veya seçin"
+                required 
               />
               <datalist id="products">
                 <option value="03.05 Granül Yem" />
@@ -122,7 +139,7 @@ export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="packaging">Ambalaj</Label>
-                <Select name="packaging" onValueChange={setPackaging}>
+                <Select name="packaging" value={packaging} onValueChange={setPackaging}>
                   <SelectTrigger>
                     <SelectValue placeholder="Ambalaj seçin" />
                   </SelectTrigger>
@@ -143,6 +160,7 @@ export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
                   name="quantity" 
                   type="number" 
                   min="0"
+                  required
                   onChange={(e) => setQuantity(Number(e.target.value))}
                 />
               </div>
@@ -157,7 +175,7 @@ export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
 
             <div className="grid gap-2">
               <Label htmlFor="facility">Tesis</Label>
-              <Select name="facility">
+              <Select name="facility" defaultValue="kara">
                 <SelectTrigger>
                   <SelectValue placeholder="Tesis seçin" />
                 </SelectTrigger>
