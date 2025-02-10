@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,7 @@ interface Order {
   quantity: number;
   total_weight: number;
   facility: "kara" | "baraj";
-  notes: string;
+  notes: string | null;
   created_by: string;
   status: string;
   created_at: string;
@@ -52,7 +51,7 @@ const Orders = () => {
         throw error;
       }
 
-      return data || [];
+      return (data || []) as Order[];
     },
   });
 
@@ -84,20 +83,20 @@ const Orders = () => {
     window.open(whatsappUrl, '_blank');
   };
 
-  const handleUpdateOrder = async (e: React.FormEvent) => {
+  const handleUpdateOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingOrder) return;
 
     const formData = new FormData(e.target as HTMLFormElement);
     const updatedOrder = {
       ...editingOrder,
-      customer_name: formData.get("customer"),
-      shipping_region: formData.get("region"),
-      product: formData.get("product"),
-      packaging: formData.get("packaging"),
+      customer_name: String(formData.get("customer")),
+      shipping_region: String(formData.get("region")),
+      product: String(formData.get("product")),
+      packaging: String(formData.get("packaging")),
       quantity: Number(formData.get("quantity")),
-      facility: formData.get("facility"),
-      notes: formData.get("notes"),
+      facility: String(formData.get("facility")) as "kara" | "baraj",
+      notes: formData.get("notes") ? String(formData.get("notes")) : null,
     };
 
     try {

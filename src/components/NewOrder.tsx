@@ -41,7 +41,7 @@ export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
     return (weights[packaging as keyof typeof weights] || 0) * quantity;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const totalWeight = calculateTotalWeight(packaging, quantity);
@@ -49,15 +49,15 @@ export const NewOrder = ({ onOrderCreate }: NewOrderProps) => {
     const orderNumber = `SP${Date.now()}`;
     const newOrder = {
       order_number: orderNumber,
-      customer_name: formData.get("customer"),
-      shipping_region: formData.get("region"),
-      product: formData.get("product"),
+      customer_name: String(formData.get("customer")),
+      shipping_region: String(formData.get("region")),
+      product: String(formData.get("product")),
       packaging: packaging,
       quantity: quantity,
       total_weight: totalWeight,
-      facility: formData.get("facility"),
-      notes: formData.get("notes"),
-      created_by: "Aktif Kullanıcı", // This would come from auth context in a real app
+      facility: String(formData.get("facility")),
+      notes: formData.get("notes") ? String(formData.get("notes")) : null,
+      created_by: "Aktif Kullanıcı",
       status: "Beklemede"
     };
 
