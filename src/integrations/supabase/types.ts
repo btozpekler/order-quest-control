@@ -9,6 +9,119 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      customer_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          address: string | null
+          category_id: string | null
+          company_name: string
+          contact_name: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          region: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          category_id?: string | null
+          company_name: string
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          category_id?: string | null
+          company_name?: string
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "customer_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory: {
+        Row: {
+          created_at: string | null
+          id: string
+          min_stock_level: number | null
+          product_code: string
+          product_name: string
+          quantity: number
+          status: string | null
+          unit: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          min_stock_level?: number | null
+          product_code: string
+          product_name: string
+          quantity?: number
+          status?: string | null
+          unit: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          min_stock_level?: number | null
+          product_code?: string
+          product_name?: string
+          quantity?: number
+          status?: string | null
+          unit?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string | null
@@ -60,6 +173,30 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       production: {
         Row: {
           batch_number: string
@@ -93,6 +230,42 @@ export type Database = {
           product_type?: string
           quantity?: number
           status?: string | null
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          auto_stock_update: boolean | null
+          company_name: string
+          created_at: string | null
+          critical_stock_notifications: boolean | null
+          email_notifications: boolean | null
+          id: string
+          tax_number: string | null
+          updated_at: string | null
+          whatsapp_notifications: boolean | null
+        }
+        Insert: {
+          auto_stock_update?: boolean | null
+          company_name: string
+          created_at?: string | null
+          critical_stock_notifications?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          tax_number?: string | null
+          updated_at?: string | null
+          whatsapp_notifications?: boolean | null
+        }
+        Update: {
+          auto_stock_update?: boolean | null
+          company_name?: string
+          created_at?: string | null
+          critical_stock_notifications?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          tax_number?: string | null
+          updated_at?: string | null
+          whatsapp_notifications?: boolean | null
         }
         Relationships: []
       }
@@ -145,6 +318,77 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stock_count_items: {
+        Row: {
+          counted_quantity: number
+          created_at: string | null
+          difference: number | null
+          id: string
+          notes: string | null
+          previous_quantity: number | null
+          product_code: string
+          stock_count_id: string | null
+        }
+        Insert: {
+          counted_quantity: number
+          created_at?: string | null
+          difference?: number | null
+          id?: string
+          notes?: string | null
+          previous_quantity?: number | null
+          product_code: string
+          stock_count_id?: string | null
+        }
+        Update: {
+          counted_quantity?: number
+          created_at?: string | null
+          difference?: number | null
+          id?: string
+          notes?: string | null
+          previous_quantity?: number | null
+          product_code?: string
+          stock_count_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_count_items_stock_count_id_fkey"
+            columns: ["stock_count_id"]
+            isOneToOne: false
+            referencedRelation: "stock_counts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_counts: {
+        Row: {
+          completed_at: string | null
+          count_number: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          personnel: string
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          count_number: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          personnel: string
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          count_number?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          personnel?: string
+          status?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
