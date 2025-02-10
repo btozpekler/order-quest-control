@@ -47,10 +47,10 @@ export const ProductionEntry = ({ isEditing, production, onClose }: ProductionEn
     const formData = new FormData(e.target as HTMLFormElement);
     
     const newProduction = {
-      product_type: formData.get("product"),
+      product_type: String(formData.get("product")),
       quantity: Number(formData.get("quantity")),
-      batch_number: formData.get("lotNumber"),
-      notes: formData.get("notes"),
+      batch_number: String(formData.get("lotNumber")),
+      notes: formData.get("notes") ? String(formData.get("notes")) : null,
       status: "Üretimde"
     };
 
